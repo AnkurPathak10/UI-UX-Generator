@@ -26,7 +26,7 @@ export default function RootLayout({
           className={appFont.className}
         >
           <TooltipProvider>
-            <Provider>
+            <Provider>     //User opens the website So Provider mounts immediately in the browser (because "use client")
               {children}
             </Provider>
           </TooltipProvider>
