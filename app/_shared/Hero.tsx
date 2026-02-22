@@ -56,7 +56,7 @@ const Hero = () => {
     }
 
   return (
-    <div className='p-10 md:px-24 lg:px-48 xl:px-60 mt-20'>
+    <div className='p-10 md:px-24 lg:px-48 xl:px-60 mt-0 md:mt-15'>
         <div className="flex items-center justify-center w-full mb-5 mt-8">
             <div className="group relative max-w-sm mx-auto flex items-center justify-center rounded-full px-4 py-1.5 shadow-[inset_0_-8px_10px_#8fdfff1f] transition-shadow duration-500 ease-out hover:shadow-[inset_0_-5px_10px_#8fdfff3f]">
                 <span
@@ -118,7 +118,7 @@ const Hero = () => {
             </InputGroup>
         </div>
 
-        <div className="flex gap-5 mt-4">
+        <div className="flex flex-wrap justify-center gap-5 mt-6">
             {suggestions.map((suggestion, index)=>(
                 <div key={index} className="p-2 border rounded-2xl 
                 flex flex-col items-center z-10 bg-white cursor-pointer" onClick={()=>setUserInput(suggestion?.description)}>
