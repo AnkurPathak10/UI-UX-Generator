@@ -24,7 +24,9 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 const Hero = () => {
-    const [userInput, setUserInput] = useState<string>('');    const {user} = useUser();
+    const [userInput, setUserInput] = useState<string>('');    
+    const [device, setDevice] = useState<string>('website');
+    const {user} = useUser();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
 
