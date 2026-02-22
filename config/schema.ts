@@ -1,4 +1,3 @@
-import { datetime } from "drizzle-orm/mysql-core";
 import { date, integer, json, pgTable, varchar } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
@@ -9,7 +8,7 @@ export const usersTable = pgTable("users", {
 });
 
 
-export const ProjectRable = pgTable('project', {
+export const ProjectTable = pgTable('project', {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   projectId: varchar().notNull(),
   userInput: varchar(),

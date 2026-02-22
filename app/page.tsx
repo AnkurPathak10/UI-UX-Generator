@@ -4,7 +4,7 @@ import Hero from "./_shared/Hero";
 
 export default function Home() {
   return (
-    <div>
+    <div className="relative">
       <Header/>
       <Hero/>
       <div className="absolute -top-40 -left-40

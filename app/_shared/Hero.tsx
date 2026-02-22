@@ -19,15 +19,12 @@ import { suggestions } from "@/data/constant"
 import { cn } from "@/lib/utils"
 import { useAuth, useUser } from "@clerk/nextjs"
 import axios from "axios"
-import { randomUUID } from "crypto"
 import { ChevronRight, Loader, Send } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 const Hero = () => {
-    const [userInput, setUserInput] = useState<string>();
-    const [device, setDevice] = useState<string>('website');
-    const {user} = useUser();
+    const [userInput, setUserInput] = useState<string>('');    const {user} = useUser();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
 
@@ -44,7 +41,7 @@ const Hero = () => {
         setLoading(true);
 
         const projectId = crypto.randomUUID();
-        const result = await axios.post('api/project', {
+        const result = await axios.post('/api/project', {
             userInput: userInput,
             device: device,
             projectId: projectId,
