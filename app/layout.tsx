@@ -21,13 +21,13 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en"> 
         <body
           className={appFont.className}
         >
-          <TooltipProvider>
-            <Provider>     //User opens the website So Provider mounts immediately in the browser (because "use client")
-              {children}
+          <TooltipProvider> 
+            <Provider>     
+              {children}   
             </Provider>
           </TooltipProvider>
         </body>
