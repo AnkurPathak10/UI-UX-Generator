@@ -34,7 +34,7 @@ const SettingsSection = () => {
             <div className='h-[200px] overflow-auto'>
                 {THEME_NAME_LIST.map((theme, index) => (
                   <div className={`p-3 border rounded-xl mb-2
-                    ${theme == selectedTheme && 'border-primary bg-primary/20'}`}
+                    ${theme === selectedTheme && 'border-primary bg-primary/20'}`} key = {theme}
                     onClick={() => setSelectedTheme(theme)}
                   >
                     <h2>{theme}</h2>
