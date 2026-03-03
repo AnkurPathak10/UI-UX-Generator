@@ -10,7 +10,7 @@ export type ProjectType = {
 
 export type ScreenConfig = {
     id: number,
-    screenid: string,
+    screenId: string,
     screenName: string,
     purpose: string,
     screenDescription: string,
