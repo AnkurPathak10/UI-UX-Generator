@@ -53,14 +53,15 @@ export async function POST(req: NextRequest){
           });
     
           const code = aiResult?.choices[0]?.message?.content;
+          if (!code) {
+            return NextResponse.json({ msg: 'AI failed to generate content' }, { status: 500 });
+          }
           const updateResult = await db.update(ScreenConfigTable).set({
             code: code as string
           }).where(and(eq(ScreenConfigTable.projectId, projectId), eq(ScreenConfigTable?.screenId, screenId as string)))
-                    .returning()
-    
-          return NextResponse.json(updateResult[0]);
     } catch (error) {
-        return NextResponse.json({msg: 'Internal server error!'})
-    }
+        console.error('Error generating screen UI:', error);
+        return NextResponse.json({ msg: 'Internal server error!' }, { status: 500 });
+    }    
+} 
     
-}

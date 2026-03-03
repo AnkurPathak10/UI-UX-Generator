@@ -61,6 +61,5 @@ export async function POST(req: NextRequest) {  // Call AI to generate project s
         return NextResponse.json(JSONAiResult);
     }
     else{
-        return NextResponse.json({msg: "Internal Server Error"});
-    }
-  }
+        return NextResponse.json({msg: "Internal Server Error"}, { status: 500 });
+    }  }

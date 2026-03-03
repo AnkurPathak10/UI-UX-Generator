@@ -5,22 +5,38 @@ import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest){
-    const {userInput, device, projectId} = await req.json();
     const user = await currentUser(); 
+    
+    if (!user?.primaryEmailAddress?.emailAddress) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const result = await db.insert(ProjectTable).values({
-        projectId: projectId,
-        userId: user?.primaryEmailAddress?.emailAddress as string,
-        device: device,
-        userInput: userInput,
-    }).returning();
+    const {userInput, device, projectId} = await req.json();
+    
+    if (!projectId || !device || !userInput) {
+        return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
 
-    return NextResponse.json(result[0]);
+    try {
+        const result = await db.insert(ProjectTable).values({
+            projectId: projectId,
+            userId: user.primaryEmailAddress.emailAddress,
+            device: device,
+            userInput: userInput,
+        }).returning();
+
+        return NextResponse.json(result[0]);
+    } catch (error) {
+        console.error('Failed to create project:', error);
+        return NextResponse.json({ error: 'Failed to create project' }, { status: 500 });
+    }
 }
-
 export async function GET(req: NextRequest) {   // GET project details along with all related screen configurations
-    const projectId = await req.nextUrl.searchParams.get('projectId');
-    const user = await currentUser();
+    const projectId = req.nextUrl.searchParams.get('projectId');
+    } catch (error) {
+        console.error('Failed to fetch project:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }     }
 
     try {
         const result = await db.select().from(ProjectTable)
@@ -36,4 +52,3 @@ export async function GET(req: NextRequest) {   // GET project details along wit
     } catch (error) {
         return NextResponse.json({msg: 'Error'});
     }
-}
