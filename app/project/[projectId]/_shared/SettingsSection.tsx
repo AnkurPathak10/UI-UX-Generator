@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { THEME_NAME_LIST, THEMES } from '@/data/themes'
 import { ProjectType } from '@/data/types'
 import { Camera, Share, Sparkles } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type Props = {
   projectDetail: ProjectType | undefined;
@@ -16,7 +16,7 @@ const SettingsSection = ({projectDetail}: Props) => {
   const [projectName ,setProjectName] = useState(projectDetail?.projectName);
   const [userNewScreenInput, setUserNewScreenInput] = useState<string>();
   
-  useEffect(()=>{
+  useEffect(()=>{   // Sync project name from backend when projectDetail loads
     projectDetail && setProjectName(projectDetail?.projectName);
   },[projectDetail])
   

@@ -3,7 +3,7 @@ import axios from 'axios';
 import ProjectHeader from './_shared/ProjectHeader';
 import SettingsSection from './_shared/SettingsSection';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ProjectType, ScreenConfig } from '@/data/types';
 import { Loader2Icon } from 'lucide-react';
 
@@ -32,23 +32,71 @@ const ProjectCanvasPlayground = () => {
     setLoading(false);
   }
 
-  useEffect(() => {
-    if(projectDetail && screenConfig && screenConfig?.length === 0){
-      generateScreenConfig();
+  const isGenerating = useRef(false); // ✅ tracks if generation is in progress
+
+useEffect(() => {
+    if (!projectDetail) return;
+    if (isGenerating.current) return; // ✅ prevent re-entry during generation
+
+    if (screenConfig?.length === 0) {
+      isGenerating.current = true;
+      generateScreenConfig().finally(() => { isGenerating.current = false; });
+    } else if (screenConfig.some(s => !s.code)) { // ✅ only run if screens need generation
+      isGenerating.current = true;
+      GenerateScreenUIUX(screenConfig).finally(() => { isGenerating.current = false; });
     }
-  }, [projectDetail && screenConfig]);
+}, [projectDetail, screenConfig]);
 
+
+  // Auto-generate screen configuration if project has no screens yet
   const generateScreenConfig = async () => {
-    setLoading(true);
-    setLoadingMsg('Generating Screen Config...');
-    const result = await axios.post('/api/generate-config', {
-      projectId: projectId,
-      deviceType: projectDetail?.device,
-      userInput: projectDetail?.userInput,
-    });
+    console.log("generateScreenConfig called");
+    try {
+      setLoading(true);
+      setLoadingMsg('Generating Screen Config...');
+  
+      const result = await axios.post('/api/generate-config', {
+        projectId,
+        deviceType: projectDetail?.device,
+        userInput: projectDetail?.userInput,
+      });
+  
+      console.log("Generate Config Response:", result.data);
+  
+      await GetProjectDetail();
+    } catch (error: any) {
+      console.error("Generate Config Error:", error.response?.data || error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    console.log(result.data);
-    GetProjectDetail();
+  const GenerateScreenUIUX = async (screens: ScreenConfig[]) => {
+    console.log("GenerateScreenUIUX called with", screens);
+    setLoading(true);
+
+    for (let index = 0; index < screens.length; index++) {
+      const screen = screens[index];
+
+      if (!screen?.screenId || screen?.code) continue; // ✅ guard against empty screens
+
+      setLoadingMsg(`Generating Screen ${index + 1}`);
+
+      try {
+        const result = await axios.post('/api/generate-screen-ui', {
+          projectId,
+          screenId: screen.screenId,
+          screenName: screen.screenName,
+          purpose: screen.purpose,
+          screenDescription: screen.screenDescription,
+        });
+        console.log("Screen result:", result.data);
+        setScreenConfig(prev => prev.map((item, i) => (i === index ? result.data : item)));
+      } catch (err) {
+        console.error(`Error generating screen ${index + 1}:`, err);
+      }
+    }
+
     setLoading(false);
   }
 

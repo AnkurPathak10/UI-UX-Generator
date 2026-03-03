@@ -18,7 +18,7 @@ export async function POST(req: NextRequest){
     return NextResponse.json(result[0]);
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest) {   // GET project details along with all related screen configurations
     const projectId = await req.nextUrl.searchParams.get('projectId');
     const user = await currentUser();
 
