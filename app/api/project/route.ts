@@ -33,10 +33,10 @@ export async function POST(req: NextRequest){
 }
 export async function GET(req: NextRequest) {   // GET project details along with all related screen configurations
     const projectId = req.nextUrl.searchParams.get('projectId');
-    } catch (error) {
-        console.error('Failed to fetch project:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }     }
+    const user = await currentUser();
+    if (!user?.primaryEmailAddress?.emailAddress) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+     }
 
     try {
         const result = await db.select().from(ProjectTable)
@@ -52,3 +52,4 @@ export async function GET(req: NextRequest) {   // GET project details along wit
     } catch (error) {
         return NextResponse.json({msg: 'Error'});
     }
+}
