@@ -58,7 +58,9 @@ export async function POST(req: NextRequest){
           }
           const updateResult = await db.update(ScreenConfigTable).set({
             code: code as string
-          }).where(and(eq(ScreenConfigTable.projectId, projectId), eq(ScreenConfigTable?.screenId, screenId as string)))
+          }).where(and(eq(ScreenConfigTable.projectId, projectId), eq(ScreenConfigTable?.screenId, screenId as string))).returning();
+
+          return NextResponse.json(updateResult[0]);
     } catch (error) {
         console.error('Error generating screen UI:', error);
         return NextResponse.json({ msg: 'Internal server error!' }, { status: 500 });

@@ -6,13 +6,15 @@ import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { ProjectType, ScreenConfig } from '@/data/types';
 import { Loader2Icon } from 'lucide-react';
+import Canvas from '../../_shared/Canvas';
 
 const ProjectCanvasPlayground = () => {
   const {projectId} = useParams();
   const [projectDetail, setProjectDetail] = useState<ProjectType>();
   const [screenConfig, setScreenConfig] = useState<ScreenConfig[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMsg, setLoadingMsg] = useState('Loading...')
+  const [loadingMsg, setLoadingMsg] = useState('Loading...');
+  const [screenConfigOriginal, setScreenConfigOriginal] = useState<ScreenConfig[]>([]);
 
   useEffect(() => {
     projectId && GetProjectDetail();
@@ -24,8 +26,10 @@ const ProjectCanvasPlayground = () => {
     const result = await axios.get('/api/project?projectId=' + projectId);
 
     setProjectDetail(result?.data?.projectDetail);
-    setScreenConfig(result?.data?.screenConfig);
+    setScreenConfigOriginal(result?.data?.screenConfig);
 
+    setScreenConfig(result?.data?.screenConfig);
+    console.log("screenConfig state:", screenConfig);
     //if(result?.data?.screenConfig?.length === 0){
     //  generateScreenConfig();
     //}
@@ -38,14 +42,15 @@ useEffect(() => {
     if (!projectDetail) return;
     if (isGenerating.current) return; // ✅ prevent re-entry during generation
 
-    if (screenConfig?.length === 0) {
+    if (screenConfigOriginal?.length === 0) {
       isGenerating.current = true;
-      generateScreenConfig().finally(() => { isGenerating.current = false; });
-    } else if (screenConfig.some(s => !s.code)) { // ✅ only run if screens need generation
+      generateScreenConfig();
+    } else if (screenConfigOriginal.some(s => !s.code)) { // ✅ only run if screens need generation
       isGenerating.current = true;
-      GenerateScreenUIUX(screenConfig).finally(() => { isGenerating.current = false; });
+      GenerateScreenUIUX(screenConfigOriginal).finally(() => { isGenerating.current = false; });
     }
-}, [projectDetail, screenConfig]);
+    console.log("screenConfigOriginal state:", screenConfigOriginal);
+}, [projectDetail, screenConfigOriginal]);
 
 
   // Auto-generate screen configuration if project has no screens yet
@@ -66,6 +71,7 @@ useEffect(() => {
       await GetProjectDetail();
     } catch (error: any) {
       console.error("Generate Config Error:", error.response?.data || error);
+      isGenerating.current = false;
     } finally {
       setLoading(false);
     }
@@ -104,7 +110,7 @@ useEffect(() => {
     <div>
         <ProjectHeader/>
 
-        <div>
+        <div className='flex'>
             {loading && <div className='p-3 rounded-xl absolute left-1/2 top-20 bg-blue-300/20 border border-blue-400'>
               <h2 className='flex gap-2 items-center'> 
                 <Loader2Icon className='animate-spin'/> {loadingMsg}
@@ -115,6 +121,7 @@ useEffect(() => {
             <SettingsSection projectDetail = {projectDetail}/>
 
             {/* Canvas */}
+            <Canvas projectDetail={projectDetail} screenConfig={screenConfig}/>
         </div>
     </div>
   )
