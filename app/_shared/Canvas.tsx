@@ -1,10 +1,12 @@
 "use client"
 import React, { useState } from 'react'
-import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch"
+import {TransformWrapper, TransformComponent, useControls} from "react-zoom-pan-pinch"
 import ScreenFrame from './ScreenFrame'
 import { ProjectType, ScreenConfig } from '@/data/types'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Rnd } from 'react-rnd'
+import { Minus, Plus, RefreshCcw, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 type Props = {
     projectDetail: ProjectType | undefined,
@@ -20,6 +22,18 @@ function Canvas({projectDetail, screenConfig, loading}: Props) {
     const SCREEN_WIDTH = isMobile ? 400 : 1200;
     const GAP = isMobile ? 10 : 70;
     const SCREEN_HEIGHT = 800;
+
+    const Controls = () => {
+        const { zoomIn, zoomOut, resetTransform } = useControls();
+      
+        return (
+          <div className="tools absolute p-2 px-3 bg-white shadow flex gap-3 z-30 text-gray-500 rounded-4xl left-1/2 bottom-10">
+            <Button variant={'ghost'} size={'sm'} onClick={() => zoomIn()}><Plus/></Button>
+            <Button variant={'ghost'} size={'sm'} onClick={() => zoomOut()}><Minus/></Button>
+            <Button variant={'ghost'} size={'sm'} onClick={() => resetTransform()}><RefreshCcw/></Button>
+          </div>
+        );
+      };
 
 
   return (
@@ -41,6 +55,9 @@ function Canvas({projectDetail, screenConfig, loading}: Props) {
             doubleClick={{disabled: false}}
             panning={{disabled: !panningEnabled}}
         >
+            {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+            <>
+                <Controls />
             <TransformComponent
                 wrapperStyle={{width: '100%', height: '100%'}} 
             >
@@ -78,6 +95,8 @@ function Canvas({projectDetail, screenConfig, loading}: Props) {
                     )
                 ))}
             </TransformComponent>
+            </>
+            )}
             
         </TransformWrapper>
     </div>
