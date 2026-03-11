@@ -37,7 +37,7 @@ function Canvas({projectDetail, screenConfig, loading}: Props) {
             initialPositionX={50} 
             initialPositionY={50}
             limitToBounds={false}
-            wheel={{step : 0.8}}        //how fast you want to zoom-in/zoom-out with mouse scroller
+            wheel={{step : 0.01}}        //how fast you want to zoom-in/zoom-out with mouse scroller
             doubleClick={{disabled: false}}
             panning={{disabled: !panningEnabled}}
         >
