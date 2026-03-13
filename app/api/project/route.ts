@@ -31,6 +31,7 @@ export async function POST(req: NextRequest){
         return NextResponse.json({ error: 'Failed to create project' }, { status: 500 });
     }
 }
+
 export async function GET(req: NextRequest) {   // GET project details along with all related screen configurations
     const projectId = req.nextUrl.searchParams.get('projectId');
     const user = await currentUser();
@@ -52,4 +53,15 @@ export async function GET(req: NextRequest) {   // GET project details along wit
     } catch (error) {
         return NextResponse.json({msg: 'Error'});
     }
+}
+
+export async function PUT(req: NextRequest){
+    const {projectName, theme, projectId} = await req.json();
+
+    const result = await db.update(ProjectTable).set({
+        projectName: projectName,
+        theme: theme,
+    }).where(eq(ProjectTable.projectId, projectId)).returning();
+
+    return NextResponse.json(result[0]);
 }
