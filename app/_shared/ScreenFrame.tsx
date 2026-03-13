@@ -1,7 +1,8 @@
+import { SettingContext } from '@/context/SettingContext';
 import { THEMES, themeToCssVars } from '@/data/themes';
 import { ProjectType } from '@/data/types';
 import { GripVertical } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import {Rnd} from "react-rnd";
 
 type Props = {
@@ -14,14 +15,23 @@ type Props = {
     projectDetail: ProjectType | undefined,
 }
 function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htmlCode}: Props) {
+
+    const {settingDetails, setSettingDetails} = useContext(SettingContext);
     //@ts-ignore
-    const theme = THEMES[projectDetail?.theme ?? '']
+    const theme = THEMES[settingDetails?.theme ?? projectDetail?.theme]
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
     const [size, setSize] = useState({width, height});
 
     useEffect(()=>{
         setSize({width, height});
     },[height, width])
+
+    const currentThemeKey = (settingDetails?.theme ?? projectDetail?.theme) as string;
+
+    // ✅ Check if it's a valid theme key, otherwise fallback
+    const validThemeKeys = Object.keys(THEMES);
+    const resolvedKey = validThemeKeys.includes(currentThemeKey) ? currentThemeKey : 'AURORA_INK';
+    const themeObject = THEMES[resolvedKey as keyof typeof THEMES];
 
     const html = `
         <!doctype html>
@@ -39,8 +49,26 @@ function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htm
             <!-- Tailwind + Iconify -->
             <script src="https://cdn.tailwindcss.com"></script>
             <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+            <script>
+                tailwind.config = {
+                    theme: {
+                        extend: {
+                            colors: {
+                                background: 'var(--background)',
+                                foreground: 'var(--foreground)',
+                                primary: 'var(--primary)',
+                                secondary: 'var(--secondary)',
+                                accent: 'var(--accent)',
+                                muted: 'var(--muted)',
+                                border: 'var(--border)',
+                                card: 'var(--card)',
+                            }
+                        }
+                    }
+                }
+            </script>
             <style >
-                ${themeToCssVars(projectDetail?.theme)}
+               ${themeToCssVars(themeObject)}
             </style>
             </head>
         <body class="bg-background text-foreground w-full">

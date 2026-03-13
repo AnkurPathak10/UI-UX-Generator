@@ -3,6 +3,7 @@ import { UserDetailContext } from "@/context/UserDetailContext";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { SettingContext } from "@/context/SettingContext";
 
 type UserDetail = {
     id: number;
@@ -14,6 +15,7 @@ type UserDetail = {
 function Provider({children}:{ children: React.ReactNode }) {
     const { user, isLoaded } = useUser();
     const [userDetail, setUserDetail] = useState<UserDetail | null>(null);
+    const [settingDetails, setSettingDetails] = useState();
 
     useEffect(() => {                       //This runs once after hydration: So browser sends request POST /api/user
         if (!isLoaded || !user) return;                    //and then API route runs (SERVER SIDE) = export async function POST(req: NextRequest)
@@ -30,7 +32,12 @@ function Provider({children}:{ children: React.ReactNode }) {
     
   return (
     <UserDetailContext.Provider value={{userDetail, setUserDetail}}>
-        {children}
+      <SettingContext.Provider value={{settingDetails, setSettingDetails}}>
+        <div>
+          {children}
+        </div>
+      </SettingContext.Provider>
+        
     </UserDetailContext.Provider>
 
   )

@@ -4,14 +4,15 @@ import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ClerkProvider } from '@clerk/nextjs'
 import Provider from "./provider";
+import { Toaster } from "sonner";
 
 const appFont = DM_Sans({
   subsets: ['latin']
 })
 
 export const metadata: Metadata = {
-  title: "UI/UX Generator",
-  description: "Generate Premium",
+  title: "SketchPilot",
+  description: "Generate Premium UI/UX designs for your app",
 };
 
 export default function RootLayout({
@@ -26,9 +27,11 @@ export default function RootLayout({
           className={appFont.className}
         >
           <TooltipProvider> 
-            <Provider>     
-              {children}   
-            </Provider>
+            <Toaster position="top-center"/>
+              <Provider>     
+                {children}   
+              </Provider>
+            
           </TooltipProvider>
         </body>
       </html>

@@ -36,7 +36,7 @@ OUTPUT JSON SHAPE (TOP LEVEL)
 SCREEN COUNT RULES
 ────────────────────────────────────────
 - If the user says "one", return exactly 1 screen.
-- Otherwise return 1–4 screens.
+- Otherwise return exactly 3 screens. Never more than 3, never less than 3.
 - If {deviceType} is "Mobile" or "Tablet" and user did NOT say "one":
   - Screen 1 MUST be a Welcome / Onboarding screen.
 - If {deviceType} is "Website" or "Desktop":

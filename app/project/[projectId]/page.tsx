@@ -3,10 +3,11 @@ import axios from 'axios';
 import ProjectHeader from './_shared/ProjectHeader';
 import SettingsSection from './_shared/SettingsSection';
 import { useParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { ProjectType, ScreenConfig } from '@/data/types';
 import { Loader2Icon } from 'lucide-react';
 import Canvas from '../../_shared/Canvas';
+import { SettingContext } from '@/context/SettingContext';
 
 const ProjectCanvasPlayground = () => {
   const {projectId} = useParams();
@@ -15,7 +16,7 @@ const ProjectCanvasPlayground = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMsg, setLoadingMsg] = useState('Loading...');
   const [screenConfigOriginal, setScreenConfigOriginal] = useState<ScreenConfig[]>([]);
-
+  const {settingDetails, setSettingDetails} = useContext(SettingContext);
   useEffect(() => {
     projectId && GetProjectDetail();
   }, [projectId]);
@@ -30,9 +31,8 @@ const ProjectCanvasPlayground = () => {
 
     setScreenConfig(result?.data?.screenConfig);
     console.log("screenConfig state:", screenConfig);
-    //if(result?.data?.screenConfig?.length === 0){
-    //  generateScreenConfig();
-    //}
+  
+    setSettingDetails(result?.data?.projectDetail);
     setLoading(false);
   }
 

@@ -2,10 +2,11 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { SettingContext } from '@/context/SettingContext'
 import { THEME_NAME_LIST, THEMES } from '@/data/themes'
 import { ProjectType } from '@/data/types'
 import { Camera, Share, Sparkles } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 type Props = {
   projectDetail: ProjectType | undefined;
@@ -15,10 +16,20 @@ const SettingsSection = ({projectDetail}: Props) => {
   const [selectedTheme, setSelectedTheme] = useState('AURORA_INK');
   const [projectName ,setProjectName] = useState(projectDetail?.projectName);
   const [userNewScreenInput, setUserNewScreenInput] = useState<string>();
+  const {settingDetails, setSettingDetails} = useContext(SettingContext);
   
   useEffect(()=>{   // Sync project name from backend when projectDetail loads
     projectDetail && setProjectName(projectDetail?.projectName);
+    setSelectedTheme(projectDetail?.theme as string)
   },[projectDetail])
+
+  const onThemeSelect = (theme: string) => {
+    setSelectedTheme(theme);
+    setSettingDetails((prev: any) => ({
+      ...prev,
+      theme: theme,
+    }))
+  }
   
   return (
     <div className='w-[300px] h-[90vh] p-5 border-r'>
@@ -28,7 +39,13 @@ const SettingsSection = ({projectDetail}: Props) => {
             <h2 className='text-sm mb-1'>Project Name</h2>
             <Input placeholder='Project Name'
               value={projectName}
-              onChange={(event) => setProjectName(event.target.value)}
+              onChange={(event) => {
+                setProjectName(event.target.value)
+                setSettingDetails((prev: any) => ({
+                  ...prev,
+                  projectName: projectName,
+                }))
+              }}
             />
         </div>
         
@@ -42,11 +59,11 @@ const SettingsSection = ({projectDetail}: Props) => {
 
         <div className='mt-5'>
             <h2 className='text-sm mb-1'>Themes</h2>
-            <div className='h-[200px] overflow-auto'>
+            <div className='h-[300px] overflow-auto'>
                 {THEME_NAME_LIST.map((theme, index) => (
                   <div className={`p-3 border rounded-xl mb-2
                     ${theme === selectedTheme && 'border-primary bg-primary/20'}`} key = {theme}
-                    onClick={() => setSelectedTheme(theme)}
+                    onClick={() => onThemeSelect(theme)}
                   >
                     <h2>{theme}</h2>
                     <div className='flex gap-2'>
