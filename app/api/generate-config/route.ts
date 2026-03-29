@@ -1,13 +1,15 @@
 import { db } from "@/config/db";
 import { openrouter } from "@/config/openroute";
 import { ProjectTable, ScreenConfigTable } from "@/config/schema";
-import { APP_LAYOUT_CONFIG_PROMPT } from "@/data/prompt";
+import { RefreshDataContext } from "@/context/RefreshDataContext";
+import { APP_LAYOUT_CONFIG_PROMPT, GENRATE_NEW_SCREEN_IN_EXISITING_PROJECT_PROJECT } from "@/data/prompt";
 import { currentUser } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+import { useContext } from "react";
 
 export async function POST(req: NextRequest) {  // Call AI to generate project structure + screen layouts
-    const { userInput, deviceType, projectId } = await req.json();
+    const { userInput, deviceType, projectId, oldScreenDescription, theme } = await req.json();
   
     const aiResult = await openrouter.chat.send({ // Generates screen configuration via AI
       chatGenerationParams: {
@@ -15,17 +17,25 @@ export async function POST(req: NextRequest) {  // Call AI to generate project s
         messages: [
           {
             role: "system",
-            content: APP_LAYOUT_CONFIG_PROMPT.replace(
-              "{deviceType}",
-              deviceType
-            ),
+            content: [
+              {
+                type: "text",
+                text: oldScreenDescription? GENRATE_NEW_SCREEN_IN_EXISITING_PROJECT_PROJECT.replace(
+                  "{deviceType}",
+                  deviceType
+                ).replace("{theme}", theme) : APP_LAYOUT_CONFIG_PROMPT.replace(
+                  "{deviceType}",
+                  deviceType
+                ),
+              },
+            ],
           },
           {
             role: "user",
             content: [
                 {
                     type: "text",
-                    text: userInput,
+                    text: oldScreenDescription? userInput + "Old Screen Description is: " + oldScreenDescription + " User Input is: " + userInput : userInput,
                 }
             ]
           },
@@ -43,7 +53,7 @@ export async function POST(req: NextRequest) {  // Call AI to generate project s
 
     if(JSONAiResult){
         //Update project table with AI-generated metadata
-        await db.update(ProjectTable).set({   // Updates project metadata
+        !oldScreenDescription && await db.update(ProjectTable).set({   // Updates project metadata
             projectVisualDescription: JSONAiResult?.projectVisualDescription,
             projectName: JSONAiResult?.projectName,
             theme: JSONAiResult?.theme,

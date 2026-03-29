@@ -2,22 +2,29 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { RefreshDataContext } from '@/context/RefreshDataContext'
 import { SettingContext } from '@/context/SettingContext'
 import { THEME_NAME_LIST, THEMES } from '@/data/themes'
 import { ProjectType } from '@/data/types'
-import { Camera, Share, Sparkles } from 'lucide-react'
+import axios from 'axios'
+import { Camera, Loader2Icon, Share, Sparkles } from 'lucide-react'
 import { useContext, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 type Props = {
   projectDetail: ProjectType | undefined;
+  screenDescription?: string | undefined;
 }
 
-const SettingsSection = ({projectDetail}: Props) => {
+const SettingsSection = ({projectDetail, screenDescription}: Props) => {
   const [selectedTheme, setSelectedTheme] = useState('AURORA_INK');
   const [projectName ,setProjectName] = useState(projectDetail?.projectName);
   const [userNewScreenInput, setUserNewScreenInput] = useState<string>();
   const {settingDetails, setSettingDetails} = useContext(SettingContext);
-  
+  const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState('Loading...');
+  const {refreshData, setRefreshData} = useContext(RefreshDataContext);
+
   useEffect(()=>{   // Sync project name from backend when projectDetail loads
     projectDetail && setProjectName(projectDetail?.projectName);
     setSelectedTheme(projectDetail?.theme as string)
@@ -30,7 +37,28 @@ const SettingsSection = ({projectDetail}: Props) => {
       theme: theme,
     }))
   }
-  
+
+  const generateNewScreen = async () => {
+
+    try {
+      setLoading(true);
+      toast.info('Generating new screen , please wait...');
+      const result = await axios.post('/api/generate-config',{
+        projectId: projectDetail?.projectId,
+        userInput: userNewScreenInput,
+        deviceType: projectDetail?.device,
+        theme: selectedTheme,
+      });
+      console.log(result.data);
+      toast.success('Screen Generated Successfully');
+      setRefreshData({method: 'screenConfig', date: Date.now()});
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
+    
+  }
+
   return (
     <div className='w-[300px] h-[90vh] p-5 border-r'>
         <h2 className='font-medium text-lg'>Settings</h2>
@@ -54,7 +82,7 @@ const SettingsSection = ({projectDetail}: Props) => {
             <Textarea placeholder='Enter Prompt to generate using AI'
               onChange={(event) => setUserNewScreenInput(event.target.value)}
             />
-            <Button size={'sm'} className='mt-2 w-full'><Sparkles/> Generate with AI</Button>
+            <Button size={'sm'} className='mt-2 w-full' onClick={()=>generateNewScreen()} disabled={loading} > {loading ? <Loader2Icon className='animate-spin'/> : <Sparkles/>} Generate with AI</Button>
         </div>
 
         <div className='mt-5'>
