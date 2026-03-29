@@ -1,3 +1,5 @@
+import { themeToCssVars } from "./themes";
+
 export const suggestions = [
     {
       icon: '✈️',
@@ -35,3 +37,49 @@ export const suggestions = [
       description: 'Interactive learning app for kids with rewards. Colorful UI and playful illustrations.'
     }
   ];
+
+  export const HtmlWrapper = (theme: any, htmlCode: string) => {
+    return `
+        <!doctype html>
+        <html>
+            <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <!-- Google Font -->
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+
+            <!-- Tailwind + Iconify -->
+            <script src="https://cdn.tailwindcss.com"></script>
+            <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+            <script>
+                tailwind.config = {
+                    theme: {
+                        extend: {
+                            colors: {
+                                background: 'var(--background)',
+                                foreground: 'var(--foreground)',
+                                primary: 'var(--primary)',
+                                secondary: 'var(--secondary)',
+                                accent: 'var(--accent)',
+                                muted: 'var(--muted)',
+                                border: 'var(--border)',
+                                card: 'var(--card)',
+                            }
+                        }
+                    }
+                }
+            </script>
+            <style >
+               ${themeToCssVars(theme)}
+            </style>
+            </head>
+        <body class="bg-background text-foreground w-full">
+        ${htmlCode ?? ""}
+        </body>
+        </html>
+    `
+  }

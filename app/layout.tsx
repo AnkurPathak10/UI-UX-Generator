@@ -27,7 +27,7 @@ export default function RootLayout({
           className={appFont.className}
         >
           <TooltipProvider> 
-            <Toaster position="top-center"/>
+            <Toaster position="top-center" richColors/>
               <Provider>     
                 {children}   
               </Provider>

@@ -2,7 +2,8 @@ import { db } from "@/config/db";
 import { openrouter } from "@/config/openroute";
 import { ProjectTable, ScreenConfigTable } from "@/config/schema";
 import { APP_LAYOUT_CONFIG_PROMPT } from "@/data/prompt";
-import { eq } from "drizzle-orm";
+import { currentUser } from "@clerk/nextjs/server";
+import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {  // Call AI to generate project structure + screen layouts
@@ -63,3 +64,17 @@ export async function POST(req: NextRequest) {  // Call AI to generate project s
     else{
         return NextResponse.json({msg: "Internal Server Error"}, { status: 500 });
     }  }
+
+export async function DELETE(req: NextRequest) {
+  const projectId  = req.nextUrl.searchParams.get('projectId');
+  const screenId = req.nextUrl.searchParams.get('screenId');
+  const user = await currentUser();
+
+  if(!user){
+    return NextResponse.json({msg: "Unauthorized User"}, { status: 400 });
+  }
+
+  const result = await db.delete(ScreenConfigTable).where(and(eq(ScreenConfigTable.projectId, projectId as string), eq(ScreenConfigTable.screenId, screenId as string)));
+
+  return NextResponse.json({msg: "Screen Deleted Successfully"}, { status: 200 });
+}

@@ -73,6 +73,7 @@ function Canvas({projectDetail, screenConfig, loading}: Props) {
                             setPanningEnabled={setPanningEnabled}
                             htmlCode={screen?.code}
                             projectDetail={projectDetail}
+                            screen={screen}
                         />
                     ) : (
                         <Rnd

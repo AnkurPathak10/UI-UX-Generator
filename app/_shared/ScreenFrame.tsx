@@ -1,9 +1,11 @@
 import { SettingContext } from '@/context/SettingContext';
 import { THEMES, themeToCssVars } from '@/data/themes';
-import { ProjectType } from '@/data/types';
+import { ProjectType, ScreenConfig } from '@/data/types';
 import { GripVertical } from 'lucide-react';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import {Rnd} from "react-rnd";
+import ScreenHandler from '../project/[projectId]/_shared/ScreenHandler';
+import { HtmlWrapper } from '@/data/constant';
 
 type Props = {
     x: number,
@@ -13,8 +15,9 @@ type Props = {
     height: number,
     htmlCode: string | undefined,
     projectDetail: ProjectType | undefined,
+    screen: ScreenConfig | undefined,
 }
-function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htmlCode}: Props) {
+function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htmlCode, screen}: Props) {
 
     const {settingDetails, setSettingDetails} = useContext(SettingContext);
     //@ts-ignore
@@ -33,49 +36,7 @@ function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htm
     const resolvedKey = validThemeKeys.includes(currentThemeKey) ? currentThemeKey : 'AURORA_INK';
     const themeObject = THEMES[resolvedKey as keyof typeof THEMES];
 
-    const html = `
-        <!doctype html>
-        <html>
-            <head>
-            <meta charset="utf-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <!-- Google Font -->
-            <link rel="preconnect" href="https://fonts.googleapis.com"/>
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-
-            <!-- Tailwind + Iconify -->
-            <script src="https://cdn.tailwindcss.com"></script>
-            <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
-            <script>
-                tailwind.config = {
-                    theme: {
-                        extend: {
-                            colors: {
-                                background: 'var(--background)',
-                                foreground: 'var(--foreground)',
-                                primary: 'var(--primary)',
-                                secondary: 'var(--secondary)',
-                                accent: 'var(--accent)',
-                                muted: 'var(--muted)',
-                                border: 'var(--border)',
-                                card: 'var(--card)',
-                            }
-                        }
-                    }
-                }
-            </script>
-            <style >
-               ${themeToCssVars(themeObject)}
-            </style>
-            </head>
-        <body class="bg-background text-foreground w-full">
-        ${htmlCode ?? ""}
-        </body>
-        </html>
-    `;
+    const html = HtmlWrapper(theme , htmlCode as string);
 
     const measureIframeHeight = useCallback(() => {
         const iframe = iframeRef.current;
@@ -171,7 +132,7 @@ function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htm
         }}
     >
         <div className='drag-handle flex gap-2 items-center cursor-move bg-white rounded-lg p-5'>
-            <GripVertical className='text-grey-500 h-4 w-4'/> Drag Here
+            <ScreenHandler screen={screen} theme={theme} iframeRef={iframeRef} projectId={projectDetail?.projectId}/>
         </div>
         <iframe
             ref={iframeRef}
