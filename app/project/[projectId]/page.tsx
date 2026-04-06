@@ -125,7 +125,7 @@ useEffect(() => {
             </div>}
 
             {/* Settings */}
-            <SettingsSection projectDetail = {projectDetail} screenDescription={screenConfigOriginal[0].screenDescription}/>
+            <SettingsSection projectDetail = {projectDetail} screenDescription={screenConfig[0]?.screenDescription}/>
 
             {/* Canvas */}
             <Canvas projectDetail={projectDetail} screenConfig={screenConfig}/>
