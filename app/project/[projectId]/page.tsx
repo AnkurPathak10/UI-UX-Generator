@@ -19,6 +19,8 @@ const ProjectCanvasPlayground = () => {
   const [screenConfigOriginal, setScreenConfigOriginal] = useState<ScreenConfig[]>([]);
   const {settingDetails, setSettingDetails} = useContext(SettingContext);
   const {refreshData, setRefreshData} = useContext(RefreshDataContext);
+  const [takeScreenshot, setTakeScreenshot] = useState<any>();
+
   useEffect(() => {
     projectId && GetProjectDetail();
   }, [projectId]);
@@ -109,8 +111,9 @@ useEffect(() => {
         console.error(`Error generating screen ${index + 1}:`, err);
       }
     }
-
     setLoading(false);
+
+    setTakeScreenshot(true);
   }
 
   return (
@@ -125,10 +128,10 @@ useEffect(() => {
             </div>}
 
             {/* Settings */}
-            <SettingsSection projectDetail = {projectDetail} screenDescription={screenConfig[0]?.screenDescription}/>
+            <SettingsSection projectDetail = {projectDetail} screenDescription={screenConfig[0]?.screenDescription} takeScreenshot={()=>setTakeScreenshot(Date.now())}/>
 
             {/* Canvas */}
-            <Canvas projectDetail={projectDetail} screenConfig={screenConfig}/>
+            <Canvas projectDetail={projectDetail} screenConfig={screenConfig} takeScreenshot={takeScreenshot}/>
         </div>
     </div>
   )

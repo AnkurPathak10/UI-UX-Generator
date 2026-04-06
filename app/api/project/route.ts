@@ -56,11 +56,12 @@ export async function GET(req: NextRequest) {   // GET project details along wit
 }
 
 export async function PUT(req: NextRequest){
-    const {projectName, theme, projectId} = await req.json();
+    const {projectName, theme, projectId, screenShot} = await req.json();
 
     const result = await db.update(ProjectTable).set({
         projectName: projectName,
         theme: theme,
+        screensShot: screenShot as string ?? null,
     }).where(eq(ProjectTable.projectId, projectId)).returning();
 
     return NextResponse.json(result[0]);

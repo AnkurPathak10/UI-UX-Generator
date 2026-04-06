@@ -16,13 +16,14 @@ type Props = {
     htmlCode: string | undefined,
     projectDetail: ProjectType | undefined,
     screen: ScreenConfig | undefined,
+    iframeRef: any;
 }
-function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htmlCode, screen}: Props) {
+function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htmlCode, screen, iframeRef}: Props) {
 
     const {settingDetails, setSettingDetails} = useContext(SettingContext);
     //@ts-ignore
     const theme = THEMES[settingDetails?.theme ?? projectDetail?.theme]
-    const iframeRef = useRef<HTMLIFrameElement | null>(null);
+    const localIframeRef = useRef<HTMLIFrameElement | null>(null);
     const [size, setSize] = useState({width, height});
 
     useEffect(()=>{
@@ -39,7 +40,7 @@ function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htm
     const html = HtmlWrapper(theme , htmlCode as string);
 
     const measureIframeHeight = useCallback(() => {
-        const iframe = iframeRef.current;
+        const iframe = localIframeRef.current;
         if (!iframe) return;
 
         try {
@@ -68,7 +69,7 @@ function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htm
     }, []);
 
     useEffect(() => {
-        const iframe = iframeRef.current;
+        const iframe = localIframeRef.current;
         if (!iframe) return;
 
         const onLoad = () => {
@@ -132,10 +133,13 @@ function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htm
         }}
     >
         <div className='drag-handle flex gap-2 items-center cursor-move bg-white rounded-lg p-5'>
-            <ScreenHandler screen={screen} theme={theme} iframeRef={iframeRef} projectId={projectDetail?.projectId}/>
+            <ScreenHandler screen={screen} theme={theme} iframeRef={localIframeRef} projectId={projectDetail?.projectId}/>
         </div>
         <iframe
-            ref={iframeRef}
+            ref={(el) => {
+                localIframeRef.current = el;
+                if (typeof iframeRef === 'function') iframeRef(el);
+            }}
             className='w-full h-[calc(100%-40px)] rounded-2xl mt-5 bg-white'
             sandbox='allow-same-origin allow-scripts'
             srcDoc={html}
