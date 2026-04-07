@@ -1,12 +1,15 @@
+"use client"
 import Image from "next/image";
 import Header from "./_shared/Header";
 import Hero from "./_shared/Hero";
+import ProjectList from "./_shared/ProjectList";
 
 export default function Home() {
   return (
     <div className="relative overflow-hidden min-h-screen">
       <Header/>
       <Hero/>
+      <ProjectList/>
       <div className="absolute -top-40 -left-40
        h-[500px] w-[500px] bg-purple-400/20 blur-[120px] rounded-full"/>
 
