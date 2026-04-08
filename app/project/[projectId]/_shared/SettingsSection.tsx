@@ -6,6 +6,7 @@ import { RefreshDataContext } from '@/context/RefreshDataContext'
 import { SettingContext } from '@/context/SettingContext'
 import { THEME_NAME_LIST, THEMES } from '@/data/themes'
 import { ProjectType } from '@/data/types'
+import { useAuth } from '@clerk/nextjs'
 import axios from 'axios'
 import { Camera, Loader2Icon, Share, Sparkles } from 'lucide-react'
 import { useContext, useEffect, useState } from 'react'
@@ -19,15 +20,18 @@ type Props = {
 
 const SettingsSection = ({projectDetail, screenDescription, takeScreenshot}: Props) => {
   const [selectedTheme, setSelectedTheme] = useState('AURORA_INK');
-  const [projectName ,setProjectName] = useState(projectDetail?.projectName);
+  const [projectName ,setProjectName] = useState(projectDetail?.projectName ?? '');
   const [userNewScreenInput, setUserNewScreenInput] = useState<string>();
   const {settingDetails, setSettingDetails} = useContext(SettingContext);
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('Loading...');
   const {refreshData, setRefreshData} = useContext(RefreshDataContext);
 
+  const {has} = useAuth();
+  const hasPremiumAccess = has && has({plan: 'premium'});
+
   useEffect(()=>{   // Sync project name from backend when projectDetail loads
-    projectDetail && setProjectName(projectDetail?.projectName);
+    projectDetail && setProjectName(projectDetail?.projectName ?? '');
     setSelectedTheme(projectDetail?.theme as string)
   },[projectDetail])
 
@@ -40,6 +44,11 @@ const SettingsSection = ({projectDetail, screenDescription, takeScreenshot}: Pro
   }
 
   const generateNewScreen = async () => {
+
+    if(!hasPremiumAccess){
+      toast.error('You need to upgrade to premium to generate new screens.');
+      return;
+    }
 
     try {
       setLoading(true);

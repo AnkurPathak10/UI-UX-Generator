@@ -22,6 +22,7 @@ import axios from "axios"
 import { ChevronRight, Loader, Send } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { toast } from "sonner"
 
 const Hero = () => {
     const [userInput, setUserInput] = useState<string>('');    
@@ -43,17 +44,24 @@ const Hero = () => {
         setLoading(true);
 
         const projectId = crypto.randomUUID();
-        const result = await axios.post('/api/project', {
-            userInput: userInput,
-            device: device,
-            projectId: projectId,
-        })
+        try {
+            const result = await axios.post('/api/project', {
+                userInput: userInput,
+                device: device,
+                projectId: projectId,
+            });
 
-        console.log(result.data);
-        setLoading(false);
-
-        //navigate to project route
-        router.push('/project/' + projectId);
+            console.log(result.data);
+            router.push('/project/' + projectId);
+        } catch (error: any) {
+            if (error.response?.status === 403) {
+                toast.error('Already reached 2 project limit! Upgrade to premium to create more projects.');
+            } else {
+                toast.error('Something went wrong. Please try again.');
+            }
+        } finally {
+            setLoading(false);
+        }
     }
 
   return (

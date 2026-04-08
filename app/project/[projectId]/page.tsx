@@ -9,6 +9,7 @@ import { Loader2Icon } from 'lucide-react';
 import Canvas from '../../_shared/Canvas';
 import { SettingContext } from '@/context/SettingContext';
 import { RefreshDataContext } from '@/context/RefreshDataContext';
+import { toast } from 'sonner';
 
 const ProjectCanvasPlayground = () => {
   const {projectId} = useParams();
@@ -31,18 +32,21 @@ const ProjectCanvasPlayground = () => {
     }
   }, [refreshData]);
   const GetProjectDetail = async () => {
-    setLoading(true);
-    setLoadingMsg('Loading...');
-    const result = await axios.get('/api/project?projectId=' + projectId);
+    try {
+      setLoading(true);
+      setLoadingMsg('Loading...');
+      const result = await axios.get('/api/project?projectId=' + projectId);
 
-    setProjectDetail(result?.data?.projectDetail);
-    setScreenConfigOriginal(result?.data?.screenConfig);
-
-    setScreenConfig(result?.data?.screenConfig);
-    console.log("screenConfig state:", screenConfig);
-  
-    setSettingDetails(result?.data?.projectDetail);
-    setLoading(false);
+      setProjectDetail(result?.data?.projectDetail);
+      setScreenConfigOriginal(result?.data?.screenConfig ?? []);
+      setScreenConfig(result?.data?.screenConfig ?? []);
+      setSettingDetails(result?.data?.projectDetail);
+    } catch (error) {
+      console.error('Failed to load project:', error);
+      toast.error('Failed to load project. Please refresh the page.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   const isGenerating = useRef(false); // ✅ tracks if generation is in progress
@@ -76,12 +80,14 @@ useEffect(() => {
       });
   
       console.log("Generate Config Response:", result.data);
-  
+
+      isGenerating.current = false;
       await GetProjectDetail();
     } catch (error: any) {
       console.error("Generate Config Error:", error.response?.data || error);
-      isGenerating.current = false;
+      toast.error('Failed to generate screen config. Please refresh to retry.');
     } finally {
+      isGenerating.current = false;
       setLoading(false);
     }
   };
@@ -90,12 +96,15 @@ useEffect(() => {
     console.log("GenerateScreenUIUX called with", screens);
     setLoading(true);
 
+    let successCount = 0;
+    let failCount = 0;
+
     for (let index = 0; index < screens.length; index++) {
       const screen = screens[index];
 
-      if (!screen?.screenId || screen?.code) continue; // ✅ guard against empty screens
+      if (!screen?.screenId || screen?.code) continue;
 
-      setLoadingMsg(`Generating Screen ${index + 1}`);
+      setLoadingMsg(`Generating Screen ${index + 1} of ${screens.length}`);
 
       try {
         const result = await axios.post('/api/generate-screen-ui', {
@@ -107,13 +116,24 @@ useEffect(() => {
         });
         console.log("Screen result:", result.data);
         setScreenConfig(prev => prev.map((item, i) => (i === index ? result.data : item)));
+        successCount++;
       } catch (err) {
         console.error(`Error generating screen ${index + 1}:`, err);
+        failCount++;
+        toast.error(`Failed to generate screen ${index + 1} (${screen.screenName}). You can refresh to retry.`);
       }
     }
     setLoading(false);
 
-    setTakeScreenshot(true);
+    if (failCount > 0 && successCount === 0) {
+      toast.error('All screens failed to generate. Please refresh the page to retry.');
+    } else if (failCount > 0) {
+      toast.warning(`${failCount} screen(s) failed. Refresh to retry failed screens.`);
+    }
+
+    if (successCount > 0) {
+      setTakeScreenshot(Date.now());
+    }
   }
 
   return (

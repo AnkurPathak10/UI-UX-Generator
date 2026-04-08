@@ -5,6 +5,21 @@ import { GENERATION_SCREEN_PROMPT } from "@/data/prompt";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
+async function callWithRetry<T>(fn: () => Promise<T>, maxRetries = 2): Promise<T> {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            return await fn();
+        } catch (error: any) {
+            const isRetryable = error?.cause?.code === 'ECONNRESET' || error?.message?.includes('terminated');
+            if (!isRetryable || attempt === maxRetries) throw error;
+            const delay = 1000 * Math.pow(2, attempt);
+            console.log(`Retrying AI call (attempt ${attempt + 2}/${maxRetries + 1}) after ${delay}ms...`);
+            await new Promise(r => setTimeout(r, delay));
+        }
+    }
+    throw new Error('Unreachable');
+}
+
 export async function POST(req: NextRequest){
     let body;
     try {
@@ -31,9 +46,9 @@ export async function POST(req: NextRequest){
     screen Description: ${screenDescription}
     `
     try {
-        const aiResult = await openrouter.chat.send({ // Generates screen configuration via AI
+        const aiResult = await callWithRetry(() => openrouter.chat.send({
             chatGenerationParams: {
-              model: "arcee-ai/trinity-large-preview:free", //replace any model
+              model: "arcee-ai/trinity-large-preview:free",
               messages: [
                 {
                   role: "system",
@@ -50,7 +65,7 @@ export async function POST(req: NextRequest){
                 },
               ],
             },
-          });
+          }));
     
           const code = aiResult?.choices[0]?.message?.content;
           if (!code) {

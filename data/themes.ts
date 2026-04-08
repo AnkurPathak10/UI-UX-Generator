@@ -250,6 +250,7 @@ export type Theme = (typeof THEMES)[ThemeKey];
 
 
 export function themeToCssVars(theme: any) {
+    if (!theme) theme = THEMES.AURORA_INK;
     return `
   :root {
     --background: ${theme.background};

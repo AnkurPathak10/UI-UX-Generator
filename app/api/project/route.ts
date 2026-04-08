@@ -1,10 +1,11 @@
 import { db } from "@/config/db";
 import { ProjectTable, ScreenConfigTable } from "@/config/schema";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { and, desc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest){
+    
     const user = await currentUser(); 
     
     if (!user?.primaryEmailAddress?.emailAddress) {
@@ -12,9 +13,21 @@ export async function POST(req: NextRequest){
     }
 
     const {userInput, device, projectId} = await req.json();
-    
+
     if (!projectId || !device || !userInput) {
         return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const {has} = await auth();
+    const hasPremiumAccess = has({plan: 'premium'});
+
+    if (!hasPremiumAccess) {
+        const projects = await db.select().from(ProjectTable)
+            .where(eq(ProjectTable.userId, user?.primaryEmailAddress?.emailAddress as string));
+
+        if (projects?.length >= 2 && !hasPremiumAccess) {
+            return NextResponse.json({ msg: 'You have reached the maximum number of projects. Upgrade to premium to create more projects.' }, { status: 403 });
+        }
     }
 
     try {
@@ -49,15 +62,18 @@ export async function GET(req: NextRequest) {   // GET project details along wit
             return NextResponse.json(result);
         }    
         
-        const ScreenConfig = await db.select().from(ScreenConfigTable)
+        const projectResult = await db.select().from(ProjectTable)
+            .where(eq(ProjectTable.projectId, projectId as string));
+
+        const screenConfigResult = await db.select().from(ScreenConfigTable)
             .where(eq(ScreenConfigTable.projectId, projectId as string));
 
         return NextResponse.json({
-            projectDetail: result[0],
-            screenConfig: ScreenConfig
+            projectDetail: projectResult[0],
+            screenConfig: screenConfigResult
         });
     } catch (error) {
-        return NextResponse.json({msg: 'Error'});
+        return NextResponse.json({msg: 'Error'}, { status: 500 });
     }
 }
 

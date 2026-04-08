@@ -21,8 +21,6 @@ type Props = {
 function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htmlCode, screen, iframeRef}: Props) {
 
     const {settingDetails, setSettingDetails} = useContext(SettingContext);
-    //@ts-ignore
-    const theme = THEMES[settingDetails?.theme ?? projectDetail?.theme]
     const localIframeRef = useRef<HTMLIFrameElement | null>(null);
     const [size, setSize] = useState({width, height});
 
@@ -31,13 +29,11 @@ function ScreenFrame({x, y, setPanningEnabled, width, projectDetail, height, htm
     },[height, width])
 
     const currentThemeKey = (settingDetails?.theme ?? projectDetail?.theme) as string;
-
-    // ✅ Check if it's a valid theme key, otherwise fallback
     const validThemeKeys = Object.keys(THEMES);
     const resolvedKey = validThemeKeys.includes(currentThemeKey) ? currentThemeKey : 'AURORA_INK';
-    const themeObject = THEMES[resolvedKey as keyof typeof THEMES];
+    const theme = THEMES[resolvedKey as keyof typeof THEMES];
 
-    const html = HtmlWrapper(theme , htmlCode as string);
+    const html = HtmlWrapper(theme, htmlCode as string);
 
     const measureIframeHeight = useCallback(() => {
         const iframe = localIframeRef.current;

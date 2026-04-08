@@ -1,19 +1,33 @@
 import { db } from "@/config/db";
 import { openrouter } from "@/config/openroute";
 import { ProjectTable, ScreenConfigTable } from "@/config/schema";
-import { RefreshDataContext } from "@/context/RefreshDataContext";
 import { APP_LAYOUT_CONFIG_PROMPT, GENRATE_NEW_SCREEN_IN_EXISITING_PROJECT_PROJECT } from "@/data/prompt";
 import { currentUser } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
-import { useContext } from "react";
 
-export async function POST(req: NextRequest) {  // Call AI to generate project structure + screen layouts
+async function callWithRetry<T>(fn: () => Promise<T>, maxRetries = 2): Promise<T> {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            return await fn();
+        } catch (error: any) {
+            const isRetryable = error?.cause?.code === 'ECONNRESET' || error?.message?.includes('terminated');
+            if (!isRetryable || attempt === maxRetries) throw error;
+            const delay = 1000 * Math.pow(2, attempt);
+            console.log(`Retrying AI call (attempt ${attempt + 2}/${maxRetries + 1}) after ${delay}ms...`);
+            await new Promise(r => setTimeout(r, delay));
+        }
+    }
+    throw new Error('Unreachable');
+}
+
+export async function POST(req: NextRequest) {
     const { userInput, deviceType, projectId, oldScreenDescription, theme } = await req.json();
   
-    const aiResult = await openrouter.chat.send({ // Generates screen configuration via AI
+    try {
+    const aiResult = await callWithRetry(() => openrouter.chat.send({
       chatGenerationParams: {
-        model: "arcee-ai/trinity-large-preview:free", //replace any model
+        model: "arcee-ai/trinity-large-preview:free",
         messages: [
           {
             role: "system",
@@ -42,9 +56,12 @@ export async function POST(req: NextRequest) {  // Call AI to generate project s
         ],
         stream: false,
       },
-    });
+    }));
     
     const rawContent = aiResult?.choices[0]?.message?.content;
+    if (!rawContent) {
+        return NextResponse.json({ msg: 'AI returned empty response' }, { status: 500 });
+    }
     const cleaned = rawContent
       .replace(/```json/g, '')
       .replace(/```/g, '')
@@ -73,7 +90,12 @@ export async function POST(req: NextRequest) {  // Call AI to generate project s
     }
     else{
         return NextResponse.json({msg: "Internal Server Error"}, { status: 500 });
-    }  }
+    }
+    } catch (error) {
+        console.error('Error generating config:', error);
+        return NextResponse.json({msg: "Failed to generate config. Please try again."}, { status: 500 });
+    }
+}
 
 export async function DELETE(req: NextRequest) {
   const projectId  = req.nextUrl.searchParams.get('projectId');
