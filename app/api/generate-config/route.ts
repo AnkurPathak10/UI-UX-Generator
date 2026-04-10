@@ -1,5 +1,5 @@
 import { db } from "@/config/db";
-import { openrouter } from "@/config/openroute";
+import { openrouter, OPENROUTER_MODEL } from "@/config/openroute";
 import { ProjectTable, ScreenConfigTable } from "@/config/schema";
 import { APP_LAYOUT_CONFIG_PROMPT, GENRATE_NEW_SCREEN_IN_EXISITING_PROJECT_PROJECT } from "@/data/prompt";
 import { currentUser } from "@clerk/nextjs/server";
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     try {
     const aiResult = await callWithRetry(() => openrouter.chat.send({
       chatGenerationParams: {
-        model: "arcee-ai/trinity-large-preview:free",
+        model: OPENROUTER_MODEL,
         messages: [
           {
             role: "system",

@@ -1,5 +1,5 @@
 import { db } from "@/config/db";
-import { openrouter } from "@/config/openroute";
+import { openrouter, OPENROUTER_MODEL } from "@/config/openroute";
 import { ScreenConfigTable } from "@/config/schema";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -10,7 +10,7 @@ export async function POST(req: NextRequest){
     try {
         const aiResult = await openrouter.chat.send({ // Generates screen configuration via AI
             chatGenerationParams: {
-              model: "arcee-ai/trinity-large-preview:free", //replace any model
+              model: OPENROUTER_MODEL,
               messages: [
                 {
                   role: "user",
