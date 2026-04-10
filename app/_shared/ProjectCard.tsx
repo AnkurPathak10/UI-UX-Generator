@@ -12,7 +12,14 @@ function ProjectCard({project}: Props) {
     <Link href={`/project/${project.projectId}`}>
       <div className=' rounded-2xl p-4 cursor-pointer'>
         {project.screensShot ? (
-          <Image className='rounded-xl object-contain h-[200px] w-full bg-black' src={project.screensShot} alt={project.projectName ?? 'Project screenshot'} width={300} height={200} />
+          <Image
+            className='rounded-xl object-cover h-[200px] w-full'
+            src={project.screensShot}
+            alt={project.projectName ?? 'Project screenshot'}
+            width={600}
+            height={400}
+            unoptimized
+          />
         ) : (
           <div className='rounded-xl h-[200px] w-full bg-gray-800 flex items-center justify-center text-gray-400 text-sm'>
             No preview available
